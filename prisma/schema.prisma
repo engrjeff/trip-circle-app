@@ -12,3 +12,168 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum TripStatus {
+  PLANNING
+  FINALIZED
+  REALIZED
+}
+
+model User {
+  id            String          @id @default(cuid())
+  name          String
+  email         String          @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  // Optional for WebAuthn support
+  Authenticator Authenticator[]
+
+  hashedPassword String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  clientId    String?      @unique // for anonymous tracking
+  tripMembers TripMember[]
+  tripCircles TripCircle[]
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model VerificationToken {
+  identifier String   @id @default(cuid())
+  email      String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([email, token])
+}
+
+model ResetPasswordToken {
+  identifier String   @id @default(cuid())
+  email      String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([email, token])
+}
+
+// Optional for WebAuthn support
+model Authenticator {
+  credentialID         String  @unique
+  userId               String
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, credentialID])
+}
+
+model TripCircle {
+  id          String       @id @default(cuid())
+  title       String // trip name
+  description String?
+  status      TripStatus   @default(PLANNING)
+  inviteCode  String       @unique
+  createdAt   DateTime     @default(now())
+  createdBy   String? // FK to User.id (optional for anonymous)
+  creator     User?        @relation(fields: [createdBy], references: [id])
+  members     TripMember[]
+  boards      Board[]
+
+  startDate DateTime?
+  endDate   DateTime?
+}
+
+model TripMember {
+  id           String              @id @default(cuid())
+  userId       String? // optional: nullable for anonymous members
+  clientId     String? // fallback for non-authenticated users
+  isOrganizer  Boolean
+  username     String
+  tripCircle   TripCircle          @relation(fields: [tripCircleId], references: [id], onDelete: Cascade)
+  tripCircleId String
+  user         User?               @relation(fields: [userId], references: [id])
+  joinedAt     DateTime            @default(now())
+  comments     SuggestionComment[]
+
+  @@index([userId])
+  @@index([clientId])
+  @@index([tripCircleId])
+}
+
+model Board {
+  id           String       @id @default(cuid())
+  title        String
+  type         String // e.g., "location", "food", "activity", etc.
+  tripCircle   TripCircle   @relation(fields: [tripCircleId], references: [id])
+  tripCircleId String
+  suggestions  Suggestion[]
+
+  @@index([tripCircleId])
+}
+
+model Suggestion {
+  id          String              @id @default(cuid())
+  title       String
+  url         String?
+  ogImage     String?
+  description String?
+  createdAt   DateTime            @default(now())
+  createdBy   String? // FK to User.id or TripMember.id
+  board       Board               @relation(fields: [boardId], references: [id])
+  boardId     String
+  comments    SuggestionComment[]
+
+  @@index([boardId])
+  @@index([createdBy])
+}
+
+model SuggestionComment {
+  id           String     @id @default(cuid())
+  content      String
+  createdAt    DateTime   @default(now())
+  suggestion   Suggestion @relation(fields: [suggestionId], references: [id])
+  suggestionId String
+  author       TripMember @relation(fields: [authorId], references: [id])
+  authorId     String
+
+  @@index([suggestionId])
+  @@index([authorId])
+}

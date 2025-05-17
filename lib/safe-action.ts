@@ -12,42 +12,6 @@ export const actionClient = createSafeActionClient({
     console.error("Action error:", e.message)
 
     if (e instanceof PrismaClientKnownRequestError) {
-      if (
-        e.message.includes(
-          "Unique constraint failed on the fields: (`schoolId`,`studentId`)"
-        )
-      ) {
-        return "Cannot have duplicate student ID or LRN."
-      }
-
-      if (
-        e.message.includes(
-          "Unique constraint failed on the fields: (`schoolId`,`teacherId`)"
-        )
-      ) {
-        return "Cannot have duplicate teacher/employee ID."
-      }
-      if (
-        e.message.includes(
-          "Unique constraint failed on the fields: (`teacherId`)"
-        )
-      ) {
-        return "Cannot have duplicate teacher/employee ID."
-      }
-      if (
-        e.message.includes(
-          "Unique constraint failed on the fields: (`schoolId`,`schoolYearId`,`semesterId`,`programOfferingId`,`courseId`,`gradeYearLevelId`,`sectionId`,`subjectId`)"
-        )
-      ) {
-        return "A class with the selected details already exists."
-      }
-      if (
-        e.message.includes(
-          "Unique constraint failed on the fields: (`schoolId`,`schoolYearId`,`semesterId`,`programOfferingId`,`courseId`,`gradeYearLevelId`,`sectionId`)"
-        )
-      ) {
-        return "An enrollment class with the provided details already exists."
-      }
     }
 
     // if (e instanceof AuthError) {
@@ -86,4 +50,3 @@ export const actionClient = createSafeActionClient({
 
 //   return next({ ctx: { user: user.user } })
 // })
-
