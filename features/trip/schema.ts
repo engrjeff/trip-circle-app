@@ -13,6 +13,9 @@ export const createTripSchema = z.object({
     .string()
     .datetime({ local: true, message: "Invalid end date." })
     .optional(),
+  organizerName: z
+    .string({ required_error: "Name is required." })
+    .nonempty({ message: "Name is required." }),
 })
 
 export type CreateTripInputs = z.infer<typeof createTripSchema>

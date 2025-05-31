@@ -9,6 +9,7 @@ import { toast } from "sonner"
 import {
   Form,
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -27,10 +28,16 @@ export function CreateTripForm() {
   const form = useForm<CreateTripInputs>({
     resolver: zodResolver(createTripSchema),
     mode: "onChange",
-    defaultValues: { title: "", description: "", startDate: "", endDate: "" },
+    defaultValues: {
+      title: "",
+      description: "",
+      organizerName: "",
+      startDate: "",
+      endDate: "",
+    },
   })
 
-  const [shouldSetDateLater, setShouldSetDateLater] = useState(true)
+  const [shouldSetDateLater, setShouldSetDateLater] = useState(false)
 
   const action = useAction(createTrip, {
     onError: ({ error }) => {
@@ -52,8 +59,12 @@ export function CreateTripForm() {
       toast.success(`Your trip ${result.data.title} was created!`)
 
       form.reset()
+
+      window.location.replace(`/trips/${result.data.id}`)
     }
   }
+
+  const usernameValue = form.watch("organizerName")
 
   return (
     <Form {...form}>
@@ -74,6 +85,31 @@ export function CreateTripForm() {
         >
           <FormField
             control={form.control}
+            name="organizerName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Your username</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Enter your username"
+                    autoFocus
+                    {...field}
+                  />
+                </FormControl>
+                {usernameValue ? (
+                  <FormDescription>
+                    This will appear as{" "}
+                    <span className="text-primary font-semibold">
+                      @{usernameValue}
+                    </span>
+                  </FormDescription>
+                ) : null}
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
             name="title"
             render={({ field }) => (
               <FormItem>
@@ -81,7 +117,6 @@ export function CreateTripForm() {
                 <FormControl>
                   <Input
                     placeholder="Trip name (e.g. Summer in Siargao)"
-                    autoFocus
                     {...field}
                   />
                 </FormControl>

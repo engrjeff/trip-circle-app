@@ -1,7 +1,9 @@
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useAction } from "next-safe-action/hooks"
 import { SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form"
+import { toast } from "sonner"
 
 import {
   Form,
@@ -13,20 +15,36 @@ import {
 import { Input } from "@/components/ui/input"
 import { SubmitButton } from "@/components/ui/submit-button"
 
+import { joinTrip } from "./actions"
 import { JoinTripInputs, joinTripSchema } from "./schema"
 
-export function JoinTripForm() {
+export function JoinTripForm({ inviteCode }: { inviteCode?: string }) {
   const form = useForm<JoinTripInputs>({
     resolver: zodResolver(joinTripSchema),
-    defaultValues: { inviteCode: "" },
+    defaultValues: { inviteCode: inviteCode ?? "" },
+  })
+
+  const action = useAction(joinTrip, {
+    onError: ({ error }) => {
+      if (error.serverError) {
+        toast.error(error.serverError)
+        return
+      }
+    },
   })
 
   const onError: SubmitErrorHandler<JoinTripInputs> = (errors) => {
     console.log(`Join Trip Errors: `, errors)
   }
 
-  const onSubmit: SubmitHandler<JoinTripInputs> = (data) => {
-    console.log(data)
+  const onSubmit: SubmitHandler<JoinTripInputs> = async (data) => {
+    const result = await action.executeAsync(data)
+
+    if (result?.data?.id) {
+      toast.success(`Welcome to the Trip Circle: ${result.data.title}`)
+      // force reload
+      window.location.reload()
+    }
   }
 
   return (
@@ -41,7 +59,10 @@ export function JoinTripForm() {
             Enter the 6-character code to join your friends
           </p>
         </div>
-        <fieldset className="space-y-4">
+        <fieldset
+          disabled={action.isPending}
+          className="space-y-4 disabled:opacity-90"
+        >
           <FormField
             control={form.control}
             name="inviteCode"
@@ -59,9 +80,9 @@ export function JoinTripForm() {
               </FormItem>
             )}
           />
-          <div className="pt-6">
-            <SubmitButton className="w-full">Join Trip Circle</SubmitButton>
-          </div>
+          <SubmitButton loading={action.isPending} className="w-full">
+            Continue
+          </SubmitButton>
         </fieldset>
       </form>
     </Form>

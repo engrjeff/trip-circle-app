@@ -24,7 +24,7 @@ export function ShareLinkDialogModal({
   inviteCode,
   onShareCallback,
 }: ShareLinkDialogModalProps) {
-  const shareUrl = `${process.env.NEXT_PUBLIC_SITE_URL}?code=${inviteCode}`
+  const shareUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/join?code=${inviteCode}`
 
   const copyToClipboard = () => {
     navigator.clipboard
@@ -53,7 +53,10 @@ export function ShareLinkDialogModal({
           Share
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent
+        onInteractOutside={(e) => e.preventDefault()}
+        className="sm:max-w-md"
+      >
         <DialogHeader>
           <DialogTitle>Share Trip Circle</DialogTitle>
           <DialogDescription>

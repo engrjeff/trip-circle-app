@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 
 export const metadata: Metadata = {
   title: `Welcome to ${site.title}`,
+  description: site.description,
 }
 
 export default function Home() {
@@ -55,11 +56,11 @@ export default function Home() {
         </div>
         {/* Buttons */}
         <div className="mt-8 flex justify-center gap-3">
-          <Button size={"lg"} asChild>
+          <Button size="lg" asChild>
             <Link href="/create">Create a Trip</Link>
           </Button>
-          <Button size={"lg"} variant={"outline"}>
-            Learn more
+          <Button size="lg" variant="secondary" asChild>
+            <Link href="/join">Join a Trip</Link>
           </Button>
         </div>
       </div>

@@ -22,7 +22,7 @@ interface ShareTripDialogProps {
 export function ShareTripDialog({ inviteCode }: ShareTripDialogProps) {
   const [open, setOpen] = useState(false)
 
-  const shareUrl = `${process.env.NEXT_PUBLIC_SITE_URL}?code=${inviteCode}`
+  const shareUrl = `${process.env.NEXT_PUBLIC_SITE_URL}/join?code=${inviteCode}`
 
   const copyToClipboard = () => {
     navigator.clipboard

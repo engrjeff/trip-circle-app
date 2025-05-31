@@ -1,7 +1,10 @@
 import type { Metadata } from "next"
+import { cookies } from "next/headers"
 import Link from "next/link"
 import { JoinTripForm } from "@/features/trip/join-trip-form"
+import { TripMemberForm } from "@/features/trip/trip-member-form"
 
+import { TRIP_CIRCLE } from "@/lib/keys"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SiteFooter } from "@/components/site-footer"
 import { SiteNavBar } from "@/components/site-navbar"
@@ -10,7 +13,20 @@ export const metadata: Metadata = {
   title: "Join A Trip",
 }
 
-function JoinTripPage() {
+interface PageProps {
+  searchParams: Promise<{ code?: string }>
+}
+
+async function JoinTripPage({ searchParams }: PageProps) {
+  const pageSearchParams = await searchParams
+
+  const cookieStore = await cookies()
+
+  const tripCircleCookie = cookieStore.get(TRIP_CIRCLE.ID_KEY)
+  const tripCircleClientCookie = cookieStore.get(
+    TRIP_CIRCLE.CLIENT_MEMBER_ID_KEY
+  )
+
   return (
     <>
       <SiteNavBar />
@@ -35,7 +51,11 @@ function JoinTripPage() {
           </TabsList>
         </Tabs>
 
-        <JoinTripForm />
+        {tripCircleCookie?.value && !tripCircleClientCookie?.value ? (
+          <TripMemberForm tripCircleId={tripCircleCookie.value} />
+        ) : (
+          <JoinTripForm inviteCode={pageSearchParams.code} />
+        )}
       </main>
       <SiteFooter />
     </>

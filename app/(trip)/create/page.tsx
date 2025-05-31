@@ -1,11 +1,7 @@
 import type { Metadata } from "next"
-import { cookies } from "next/headers"
 import Link from "next/link"
-import { redirect } from "next/navigation"
-import { AddTripMemberForm } from "@/features/trip/add-trip-member-form"
 import { CreateTripForm } from "@/features/trip/create-trip-form"
 
-import { TRIP_CIRCLE } from "@/lib/keys"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SiteFooter } from "@/components/site-footer"
 import { SiteNavBar } from "@/components/site-navbar"
@@ -15,14 +11,6 @@ export const metadata: Metadata = {
 }
 
 function CreateTripPage() {
-  const tripCircleClientId = cookies().get(TRIP_CIRCLE.CLIENT_ID_KEY)
-
-  if (tripCircleClientId?.value) redirect("/board")
-
-  const tripCircleId = cookies().get(TRIP_CIRCLE.ID_KEY)
-
-  const withTrip = Boolean(tripCircleId?.value)
-
   return (
     <>
       <SiteNavBar />
@@ -39,9 +27,7 @@ function CreateTripPage() {
         >
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="/create" asChild>
-              <Link href="/create">
-                {withTrip ? "Add Your Name" : "Create New"}
-              </Link>
+              <Link href="/create">Create New</Link>
             </TabsTrigger>
             <TabsTrigger value="/join" asChild>
               <Link href="/join">Join with Code</Link>
@@ -49,11 +35,7 @@ function CreateTripPage() {
           </TabsList>
         </Tabs>
 
-        {tripCircleId?.value ? (
-          <AddTripMemberForm tripCircleId={tripCircleId.value} />
-        ) : (
-          <CreateTripForm />
-        )}
+        <CreateTripForm />
       </main>
       <SiteFooter />
     </>

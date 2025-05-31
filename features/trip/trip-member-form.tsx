@@ -5,7 +5,6 @@ import { useAction } from "next-safe-action/hooks"
 import { SubmitErrorHandler, SubmitHandler, useForm } from "react-hook-form"
 import { toast } from "sonner"
 
-import { DialogFooter } from "@/components/ui/dialog"
 import {
   Form,
   FormControl,
@@ -21,16 +20,11 @@ import { SubmitButton } from "@/components/ui/submit-button"
 import { addTripMember } from "./actions"
 import { TripMemberInputs, tripMemberSchema } from "./schema"
 
-export function AddTripMemberForm({ tripCircleId }: { tripCircleId: string }) {
+export function TripMemberForm({ tripCircleId }: { tripCircleId: string }) {
   const form = useForm<TripMemberInputs>({
     resolver: zodResolver(tripMemberSchema),
-    defaultValues: {
-      username: "",
-      tripCircleId: tripCircleId,
-    },
+    defaultValues: { username: "", tripCircleId },
   })
-
-  const usernameValue = form.watch("username")
 
   const action = useAction(addTripMember, {
     onError: ({ error }) => {
@@ -42,18 +36,21 @@ export function AddTripMemberForm({ tripCircleId }: { tripCircleId: string }) {
   })
 
   const onError: SubmitErrorHandler<TripMemberInputs> = (errors) => {
-    console.log("Add Member Errors: ", errors)
+    console.log(`Add Trip Member Errors: `, errors)
   }
 
   const onSubmit: SubmitHandler<TripMemberInputs> = async (data) => {
     const result = await action.executeAsync(data)
 
     if (result?.data?.id) {
+      toast.success(`Welcome to the trip, ${result.data.username}!`)
       form.reset()
 
-      toast.success(`Welcome ${result.data.username}!`)
+      window.location.replace("/board")
     }
   }
+
+  const usernameValue = form.watch("username")
 
   return (
     <Form {...form}>
@@ -62,17 +59,10 @@ export function AddTripMemberForm({ tripCircleId }: { tripCircleId: string }) {
         className="space-y-6"
       >
         <div>
-          <h2 className="text-lg font-semibold">
-            Lokks like you already created a Trip
-          </h2>
-          <p className="text-muted-foreground">
-            Enter your name first to continue.
-          </p>
+          <h2 className="text-lg font-semibold">Join a Trip Circle</h2>
+          <p className="text-muted-foreground">Enter your username</p>
         </div>
-        <fieldset
-          disabled={action.isPending}
-          className="space-y-4 disabled:opacity-90"
-        >
+        <fieldset className="space-y-4">
           <FormField
             control={form.control}
             name="username"
@@ -80,28 +70,18 @@ export function AddTripMemberForm({ tripCircleId }: { tripCircleId: string }) {
               <FormItem>
                 <FormLabel>Username</FormLabel>
                 <FormControl>
-                  <Input
-                    placeholder="Enter your username"
-                    autoFocus
-                    {...field}
-                  />
+                  <Input placeholder="e.g. johndoe" autoFocus {...field} />
                 </FormControl>
-                <FormDescription>
-                  This will appear on your Trip Circle board
-                  {usernameValue ? (
-                    <span className="font-semibold">{` as @${form.watch("username")}`}</span>
-                  ) : null}
-                  .
-                </FormDescription>
+                {usernameValue ? (
+                  <FormDescription>
+                    This will appear as @{usernameValue}
+                  </FormDescription>
+                ) : null}
                 <FormMessage />
               </FormItem>
             )}
           />
-          <DialogFooter>
-            <SubmitButton loading={action.isPending} className="w-full">
-              Save
-            </SubmitButton>
-          </DialogFooter>
+          <SubmitButton className="w-full">Join Trip Circle</SubmitButton>
         </fieldset>
       </form>
     </Form>

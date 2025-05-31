@@ -26,7 +26,7 @@ export function SiteFooter() {
     <footer>
       <Separator />
 
-      <div className="mx-auto max-w-screen-xl">
+      <div className="mx-auto max-w-(--breakpoint-xl)">
         <div className="flex flex-col items-center justify-start py-12">
           {/* Logo */}
           <Link href="/" className="text-2xl font-bold">

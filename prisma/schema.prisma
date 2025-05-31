@@ -5,13 +5,81 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client" // Required
-  output   = "../generated/prisma" // Required path
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  name          String
+  email         String   @unique
+  emailVerified Boolean
+  image         String?
+  isAnonymous   Boolean?
+
+  sessions Session[]
+  accounts Account[]
+
+  organizedTripCircles TripCircle[]
+  tripMembers          TripMember[]
+
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("session")
+}
+
+model Account {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  accountId  String
+  providerId String
+
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("verification")
 }
 
 enum TripStatus {
@@ -21,38 +89,50 @@ enum TripStatus {
 }
 
 model TripCircle {
-  id          String       @id @default(cuid())
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
   title       String // trip name
   description String?
-  status      TripStatus   @default(PLANNING)
-  inviteCode  String       @unique
-  createdAt   DateTime     @default(now())
-  members     TripMember[]
-  boards      Board[]
+  status      TripStatus @default(PLANNING)
+  inviteCode  String     @unique
+  startDate   DateTime?
+  endDate     DateTime?
 
-  startDate DateTime?
-  endDate   DateTime?
+  organizedBy   User   @relation(fields: [organizedById], references: [id], onDelete: Cascade)
+  organizedById String
+
+  members TripMember[]
+  boards  Board[]
+
+  @@index([organizedById])
 }
 
 model TripMember {
-  id           String              @id @default(cuid())
-  clientId     String? // fallback for non-authenticated users
-  isOrganizer  Boolean
-  username     String
-  tripCircle   TripCircle          @relation(fields: [tripCircleId], references: [id], onDelete: Cascade)
-  tripCircleId String
-  joinedAt     DateTime            @default(now())
-  comments     SuggestionComment[]
+  id       String   @id @default(cuid())
+  joinedAt DateTime @default(now())
+  username String
 
-  @@index([clientId])
+  tripCircle   TripCircle @relation(fields: [tripCircleId], references: [id], onDelete: Cascade)
+  tripCircleId String
+  user         User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String?
+
+  suggestions Suggestion[]
+  comments    SuggestionComment[]
+  votes       Vote[]
+
   @@index([tripCircleId])
+  @@index([userId])
 }
 
 model Board {
   id           String       @id @default(cuid())
   title        String
   type         String // e.g., "location", "food", "activity", etc.
-  tripCircle   TripCircle   @relation(fields: [tripCircleId], references: [id])
+  description  String
+  tripCircle   TripCircle   @relation(fields: [tripCircleId], references: [id], onDelete: Cascade)
   tripCircleId String
   suggestions  Suggestion[]
 
@@ -60,30 +140,53 @@ model Board {
 }
 
 model Suggestion {
-  id          String              @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
   url         String?
   ogImage     String?
   description String?
-  createdAt   DateTime            @default(now())
-  createdBy   String? // FK to User.id or TripMember.id
-  board       Board               @relation(fields: [boardId], references: [id])
-  boardId     String
-  comments    SuggestionComment[]
+  createdAt   DateTime @default(now())
+  isFinal     Boolean  @default(false)
+
+  boardId  String
+  board    Board               @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  comments SuggestionComment[]
+
+  author   TripMember @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId String
+
+  votes Vote[]
 
   @@index([boardId])
-  @@index([createdBy])
+  @@index([authorId])
 }
 
 model SuggestionComment {
-  id           String     @id @default(cuid())
-  content      String
-  createdAt    DateTime   @default(now())
-  suggestion   Suggestion @relation(fields: [suggestionId], references: [id])
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  content String
+
+  suggestion   Suggestion @relation(fields: [suggestionId], references: [id], onDelete: Cascade)
   suggestionId String
-  author       TripMember @relation(fields: [authorId], references: [id])
+  author       TripMember @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId     String
 
   @@index([suggestionId])
   @@index([authorId])
+}
+
+model Vote {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  suggestion   Suggestion @relation(fields: [suggestionId], references: [id], onDelete: Cascade)
+  suggestionId String
+
+  member   TripMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  memberId String
+
+  @@unique([suggestionId, memberId]) // prevent double-voting
+  @@index([suggestionId])
+  @@index([memberId])
 }

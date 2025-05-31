@@ -26,6 +26,6 @@ export async function createUniqueInviteCode() {
   return code
 }
 
-export function generateClietId() {
-  return `client-${uuid()}`
+export function generateClientId() {
+  return `trip-circle-client-${uuid()}`
 }

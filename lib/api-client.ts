@@ -1,5 +1,5 @@
-import axios from 'axios';
+import axios from "axios"
 
 export const apiClient = axios.create({
-  baseURL: '/api',
-});
+  baseURL: process.env.NEXT_PUBLIC_SITE_URL + "/api",
+})
