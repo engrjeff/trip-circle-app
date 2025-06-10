@@ -16,21 +16,18 @@ export function TripMembersAvatars() {
   return (
     <TooltipProvider>
       <div className="hidden items-center gap-2 md:flex">
-        <p className="text-muted-foreground text-sm">Members</p>
+        <p className="text-sm text-muted-foreground">Members</p>
         <div className="flex -space-x-3">
           {tripQuery.data?.members?.map((member) => (
             <Tooltip key={member.id}>
               <TooltipTrigger>
-                <Avatar className="ring-background size-8 rounded-full object-cover ring-2">
-                  <AvatarFallback className="text-foreground bg-orange-500">
+                <Avatar className="size-8 rounded-full object-cover ring-2 ring-background">
+                  <AvatarFallback className="bg-orange-500 text-foreground">
                     {getInitials(member.username)}
                   </AvatarFallback>
                 </Avatar>
               </TooltipTrigger>
-              <TooltipContent
-                side="bottom"
-                className="bg-foreground text-background"
-              >
+              <TooltipContent side="bottom">
                 <p>{member.username}</p>
               </TooltipContent>
             </Tooltip>

@@ -29,8 +29,8 @@ export function SuggestionList({
           <motion.li
             key={suggestion.id}
             layout
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ type: "tween", stiffness: 500, damping: 30 }}
           >

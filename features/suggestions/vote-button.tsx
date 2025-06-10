@@ -73,7 +73,7 @@ export function VoteButton({
       </Button>
       <NumberFlow
         value={optimisticVotes.length}
-        className="text-muted-foreground text-sm"
+        className="text-sm text-muted-foreground"
       />
     </form>
   )

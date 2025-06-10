@@ -2,7 +2,7 @@ import { type Metadata } from "next"
 import { cookies, headers } from "next/headers"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import SuggestionBoard from "@/features/suggestions/suggestion-board"
+import { SuggestionBoard } from "@/features/suggestions/suggestion-board"
 import { updateShareLinkModalStatus } from "@/features/trip/actions"
 import { getTripById } from "@/features/trip/queries"
 import { ShareLinkDialogModal } from "@/features/trip/share-link-dialog-modal"
@@ -76,7 +76,7 @@ async function TripBoardPage({ params }: TripBoardPageProps) {
               <Badge variant="secondary">Code: {trip.inviteCode}</Badge>
             </div>
             {trip.startDate && trip.endDate ? (
-              <div className="text-muted-foreground mb-2 flex items-center gap-1 text-sm">
+              <div className="mb-2 flex items-center gap-1 text-sm text-muted-foreground">
                 <CalendarDaysIcon className="size-4" /> Schedule:{" "}
                 <time>
                   {formatDate(trip.startDate)} - {formatDate(trip.endDate)}

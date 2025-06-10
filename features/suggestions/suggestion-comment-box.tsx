@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import NumberFlow from "@number-flow/react"
 import { SuggestionComment, TripMember } from "@prisma/client"
 import { MessageSquareIcon } from "lucide-react"
@@ -12,16 +13,20 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { SubmitButton } from "@/components/ui/submit-button"
-import { Textarea } from "@/components/ui/textarea"
+
+import { SuggestionCommentForm } from "./suggestion-comment-form"
 
 export function SuggestionCommentBox({
+  suggestionId,
   comments,
 }: {
+  suggestionId: string
   comments: Array<SuggestionComment & { author: TripMember }>
 }) {
+  const [open, setOpen] = useState(false)
+
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <div className="flex items-center gap-1">
         <PopoverTrigger asChild>
           <Button variant="ghost" size="iconSm">
@@ -30,19 +35,19 @@ export function SuggestionCommentBox({
         </PopoverTrigger>
         <NumberFlow
           value={comments.length}
-          className="text-muted-foreground text-sm"
+          className="text-sm text-muted-foreground"
         />
       </div>
-      <PopoverContent className="w-80" align="start">
+      <PopoverContent className="w-80 px-0 pt-2" align="start">
         <div className="space-y-2">
-          <h4 className="font-medium">Comments</h4>
+          <h4 className="px-3 text-sm font-semibold">Comments</h4>
           <div className="max-h-40 space-y-2 overflow-y-auto empty:hidden">
             {comments.map((comment) => (
-              <div key={comment.id} className="border-t py-2 text-sm">
+              <div key={comment.id} className="border-t px-3 py-2 text-sm">
                 <div className="flex items-center gap-1">
-                  <Avatar className="size-5">
+                  <Avatar className="size-4">
                     <AvatarImage src={"#"} />
-                    <AvatarFallback className="bg-primary text-primary-foreground text-[10px]">
+                    <AvatarFallback className="bg-primary text-[10px] text-primary-foreground uppercase">
                       {getInitials(comment.author.username)}
                     </AvatarFallback>
                   </Avatar>
@@ -50,25 +55,16 @@ export function SuggestionCommentBox({
                     {comment.author.username}
                   </span>
                 </div>
-                <p className="mt-1">{comment.content}</p>
+                <p className="mt-1 ml-5">{comment.content}</p>
               </div>
             ))}
           </div>
-          <form className="space-y-2">
-            <Textarea
-              aria-label="comment"
-              placeholder="Add a comment..."
-              className="text-sm"
+          <div className="px-4">
+            <SuggestionCommentForm
+              suggestionId={suggestionId}
+              onAfterSave={() => setOpen(false)}
             />
-            <div className="flex justify-end gap-2 pt-2">
-              <Button type="button" size="sm" variant="ghost" className="h-8">
-                Cancel
-              </Button>
-              <SubmitButton size="sm" className="h-8">
-                Send
-              </SubmitButton>
-            </div>
-          </form>
+          </div>
         </div>
       </PopoverContent>
     </Popover>

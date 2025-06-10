@@ -5,7 +5,6 @@
     "next/core-web-vitals",
     "next/typescript",
     "prettier",
-    "plugin:tailwindcss/recommended",
     "plugin:@tanstack/eslint-plugin-query/recommended"
   ],
   "rules": {
@@ -14,10 +13,6 @@
     "tailwindcss/no-custom-classname": "off"
   },
   "settings": {
-    "tailwindcss": {
-      "callees": ["cn"],
-      "config": "./tailwind.config.js"
-    },
     "next": {
       "rootDir": ["./"]
     }
